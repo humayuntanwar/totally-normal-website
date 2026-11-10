@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+<title>Totally Normal Website</title>
+<link rel="icon" id="fav" href="data:,">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+body{position:fixed;left:0;top:0;right:0;bottom:0}
+body,button,input{font-family:"Arial Black","Arial Bold",Impact,"DejaVu Sans","Helvetica Neue",Arial,sans-serif;font-weight:900}
+body{user-select:none;-webkit-user-select:none}
+button{cursor:pointer;color:#000}
+html.demo,html.demo *,#stage.nocur,#stage.nocur *{cursor:none!important}
+#stage{touch-action:manipulation}
+
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;
+  background:repeating-linear-gradient(45deg,#3418e8 0 44px,#3d22f5 44px 88px)}
+
+/* ---------- header + ticker ---------- */
+#hdr{position:absolute;left:0;top:0;width:1280px;height:64px;background:#000;color:#ffe600;display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:30}
+#logo{font-size:28px;letter-spacing:1px}
+#logo span{color:#fff;font-size:16px;margin-left:10px}
+#score{font-size:28px;color:#fff;display:flex;align-items:center;gap:10px}
+#score b{display:inline-block;min-width:46px;text-align:center;background:#ffe600;color:#000;border-radius:8px;padding:0 8px;font-size:32px}
+#score b.you{background:#444;color:#aaa}
+#sc.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(2.1) rotate(-8deg);background:#00e05a}100%{transform:none}}
+#tick{position:absolute;left:0;top:686px;width:1280px;height:34px;background:#ff2bd1;color:#000;font-size:20px;line-height:34px;white-space:nowrap;overflow:hidden;z-index:30;border-top:3px solid #000}
+#tick div{display:inline-block;padding-left:1280px;animation:tick 26s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+
+/* ---------- scenes ---------- */
+.scene{position:absolute;left:0;top:64px;width:1280px;height:622px;display:none}
+.scene.on{display:block}
+.card{position:absolute;background:#fff;border:6px solid #000;border-radius:16px;box-shadow:12px 12px 0 #000}
+.scene.on>.card,.scene.on>.pop{animation:pop .3s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+.shake{animation:shake .4s!important}
+@keyframes shake{20%{transform:translateX(-16px)}40%{transform:translateX(14px)}60%{transform:translateX(-10px)}80%{transform:translateX(8px)}}
+.stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-9deg) scale(0);border:10px solid #e00000;color:#e00000;background:#fff;font-size:76px;line-height:1.05;padding:12px 36px;border-radius:18px;white-space:nowrap;text-align:center;z-index:20;pointer-events:none;transition:transform .28s cubic-bezier(.3,1.7,.5,1);box-shadow:10px 10px 0 rgba(0,0,0,.85)}
+.stamp.on{transform:translate(-50%,-50%) rotate(-9deg) scale(1)}
+.stamp small{display:block;font-size:30px;color:#000}
+
+/* ---------- 1: cookies ---------- */
+.article{left:90px;top:26px;width:1100px;height:566px;padding:26px 40px;overflow:hidden}
+.kick{font-size:22px;color:#e00000;letter-spacing:3px}
+.article h1{font-size:58px;line-height:1.05;margin:6px 0 20px}
+.article i{display:block;height:22px;background:#c9c9c9;border-radius:6px;margin-bottom:16px;filter:blur(2px)}
+.locked{position:absolute;left:50%;top:300px;transform:translateX(-50%) rotate(-3deg);background:#000;color:#fff;font-size:40px;padding:14px 30px;border-radius:12px;white-space:nowrap;text-align:center}
+.locked small{display:block;font-size:22px;color:#ffe600}
+#cookie{position:absolute;left:330px;top:440px;width:620px;height:150px;background:#111;color:#fff;border:6px solid #ffe600;border-radius:20px;display:flex;align-items:center;gap:16px;padding:0 20px;z-index:5;box-shadow:10px 10px 0 rgba(0,0,0,.6);
+  transition:left .2s cubic-bezier(.3,1.3,.5,1),top .2s cubic-bezier(.3,1.3,.5,1),width .25s,height .25s,background .2s}
+#cookie svg{width:84px;height:84px;flex:none}
+#cookie .ct{flex:1;font-size:25px;line-height:1.1}
+#cookie .ct small{display:block;font-size:16px;color:#ffe600;margin-top:6px}
+#cookieBtn{flex:none;font-size:24px;padding:16px 16px;background:#00e05a;border:5px solid #fff;border-radius:14px}
+#cookie.flee{animation:wig .25s}
+@keyframes wig{50%{transform:rotate(5deg) scale(1.06)}}
+#cookie.done{left:190px;top:170px;width:900px;height:270px;background:#00e05a;color:#000;border-color:#000;padding:0 40px;gap:30px}
+#cookie.done svg{width:150px;height:150px}
+#cookie.done .ct{font-size:54px;line-height:1.02}
+#cookie.done .ct small{font-size:28px;color:#000}
+#cookie.done #cookieBtn{display:none}
+
+/* ---------- 2: captcha ---------- */
+#grid{position:absolute;left:28px;top:24px;display:grid;grid-template-columns:repeat(3,164px);gap:10px}
+.tile{position:relative;width:164px;height:164px;border:4px solid #000;border-radius:8px;overflow:hidden;background:#eef;padding:0}
+.tile svg{display:block;width:100%;height:100%}
+.tile svg text{font:900 13px Arial,Helvetica,sans-serif;text-anchor:middle}
+.tile .ck{display:none;position:absolute;left:6px;top:6px;width:44px;height:44px;border-radius:50%;background:#1a73e8;border:3px solid #fff}
+.tile .ck::after{content:"";position:absolute;left:13px;top:5px;width:11px;height:21px;border:solid #fff;border-width:0 6px 6px 0;transform:rotate(45deg)}
+.tile.sel{outline:8px solid #1a73e8;outline-offset:-8px}
+.tile.sel .ck{display:block}
+.tile.nope::after{content:"NOPE";position:absolute;inset:0;background:#e00000;color:#fff;font-size:40px;display:flex;align-items:center;justify-content:center;animation:pop .2s}
+.capside{position:absolute;left:574px;top:24px;width:426px}
+.capq{background:#1a73e8;color:#fff;padding:18px 22px;font-size:25px;line-height:1.15;border-radius:8px}
+.capq b{display:block;font-size:104px;line-height:1}
+#verify{width:100%;height:92px;margin-top:18px;font-size:44px;background:#ffe600;border:6px solid #000;border-radius:14px;box-shadow:6px 6px 0 #000}
+#capres{margin-top:22px;font-size:30px;line-height:1.15;color:#e00000}
+#capres small{display:block;color:#000;font-size:22px;margin-top:6px}
+#capStamp{left:284px;top:280px}
+
+/* ---------- 3: newsletter ---------- */
+.pop{border:5px solid #000;border-radius:14px;box-shadow:8px 8px 0 #000;overflow:hidden;animation:pop .3s cubic-bezier(.3,1.6,.5,1)}
+#p1{position:absolute;left:120px;top:16px;width:1040px;background:#ffe600}
+#p2{background:#ff8bdc;margin-top:12px}
+#p3{background:#6ff;margin-top:12px}
+.bar{height:46px;background:#000;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:space-between;padding-left:16px}
+.x{position:relative;z-index:2;flex:none;transition:transform .16s cubic-bezier(.3,1.3,.5,1);width:64px;height:46px;background:#ff2b2b;color:#fff;border:0;border-left:4px solid #fff;font-size:34px;line-height:40px}
+.pb{padding:12px 44px 22px;text-align:center}
+.pb h2{line-height:1.08}
+#p1>.pb>h2{font-size:40px}#p2>.pb>h2{font-size:31px}#p3>.pb>h2{font-size:27px}
+.frm{display:flex;gap:12px;justify-content:center;margin-top:14px}
+.frm div{background:#fff;border:4px solid #000;border-radius:10px;font-size:20px;padding:12px 16px;color:#777}
+.frm button{font-size:24px;padding:10px 22px;background:#00e05a;border:4px solid #000;border-radius:10px}
+.big .frm{margin:60px 0 70px}.big .frm div{font-size:28px;padding:20px 24px}.big .frm button{font-size:34px;padding:16px 30px}
+.hid{display:none!important}
+#newsStamp{top:54%}
+
+/* ---------- 4: unsubscribe ---------- */
+.uhead{left:140px;top:18px;width:1000px;height:124px;text-align:center;font-size:36px;padding-top:16px;line-height:1.1;white-space:nowrap}
+.uhead span{color:#e00000}
+.uhead small{display:block;font-size:22px;color:#555;margin-top:8px}
+#unsub{position:absolute;left:430px;top:170px;width:420px;height:110px;font-size:44px;background:#ff2b2b;color:#fff;border:6px solid #000;border-radius:18px;box-shadow:8px 8px 0 #000;z-index:3;white-space:nowrap;
+  transition:left .2s cubic-bezier(.3,1.3,.5,1),top .2s cubic-bezier(.3,1.3,.5,1),transform .25s}
+#stay{position:absolute;left:460px;top:330px;width:360px;height:90px;font-size:27px;background:#00e05a;border:5px solid #000;border-radius:16px;box-shadow:5px 5px 0 #000;z-index:2;white-space:nowrap;transition:transform .3s cubic-bezier(.3,1.5,.5,1)}
+#unsubStamp{top:60%}
+
+/* ---------- 5: password ---------- */
+.pwc{left:140px;top:20px;width:1000px;height:580px;padding:22px 40px}
+.pwc h2{font-size:46px}
+.pwrow{display:flex;gap:16px;margin-top:14px}
+#pw{flex:1;min-width:0;height:92px;font:900 46px "Courier New",Courier,monospace;padding:0 22px;border:6px solid #000;border-radius:14px;background:#fffbd0;outline:none;user-select:text;-webkit-user-select:text}
+#pwgo{width:230px;font-size:38px;background:#ffe600;border:6px solid #000;border-radius:14px;box-shadow:6px 6px 0 #000}
+#rules{list-style:none;margin-top:18px}
+#rules li{position:relative;display:flex;align-items:center;gap:18px;height:78px;font-size:31px;color:#c00000;border-bottom:3px dashed #bbb;white-space:nowrap}
+.bd{position:relative;flex:none;width:52px;height:52px;border-radius:50%;background:#e00000}
+.bd::after{content:"\00d7";position:absolute;inset:0;color:#fff;font-size:44px;line-height:48px;text-align:center}
+#rules li.ok{color:#008a35}
+#rules li.ok .bd{background:#00c04d}
+#rules li.ok .bd::after{content:"";inset:auto;left:18px;top:8px;width:13px;height:25px;border:solid #fff;border-width:0 7px 7px 0;transform:rotate(45deg)}
+#rules li em{display:none;font-style:normal;position:absolute;right:0;top:20px;background:#000;color:#ffe600;font-size:20px;padding:6px 12px;border-radius:8px;transform:rotate(4deg)}
+#rules li.upd{animation:flash .7s}
+#rules li.upd em{display:block}
+@keyframes flash{0%,40%{background:#ffe600}20%,60%{background:#ff2bd1}100%{background:transparent}}
+#pwmsg{margin-top:14px;font-size:26px;color:#555}
+#pwmsg.bad{color:#e00000}
+
+/* ---------- 6: terms + continue / delete ---------- */
+.tc{left:140px;top:14px;width:1000px;height:594px;padding:16px 36px}
+.tc h2{font-size:34px;white-space:nowrap}
+.tc h2 span{color:#e00000}
+#terms{margin-top:10px;height:296px;overflow-y:scroll;overflow-x:hidden;border:5px solid #000;border-radius:12px;background:#fffbd0;padding:12px 20px;font:700 22px/1.4 Arial,Helvetica,sans-serif;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#terms p{margin-bottom:12px}
+#terms b{font-weight:900;color:#e00000}
+#tmsg{margin-top:10px;font-size:23px;color:#555;height:30px;white-space:nowrap}
+#tmsg.bad{color:#e00000}
+#cont,#del{position:absolute;top:462px;width:340px;height:96px;font-size:30px;border:6px solid #000;border-radius:16px;box-shadow:7px 7px 0 #000;white-space:nowrap;transition:left .16s cubic-bezier(.3,1.3,.5,1),opacity .2s}
+#cont{left:110px;background:#00e05a}
+#del{left:550px;background:#ff2b2b;color:#fff}
+.tc.lock #cont,.tc.lock #del{opacity:.35}
+#termStamp{top:56%}
+
+/* ---------- loading bar ---------- */
+#load{position:absolute;left:0;top:64px;width:1280px;height:622px;z-index:34;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff}
+#load.on{display:flex}
+#loadT{font-size:44px;color:#ffe600}
+#loadBar{width:900px;height:76px;background:#fff;border:6px solid #ffe600;border-radius:16px;overflow:hidden}
+#loadFill{height:100%;width:0;background:repeating-linear-gradient(45deg,#00e05a 0 24px,#00b548 24px 48px)}
+#loadP{font-size:96px;line-height:1}
+#loadS{font-size:26px;color:#ff8bdc;height:32px}
+
+/* ---------- chat widget ---------- */
+#chat{position:absolute;left:936px;top:398px;width:326px;height:276px;z-index:35;background:#fff;border:5px solid #000;border-radius:16px;box-shadow:8px 8px 0 #000;overflow:hidden;transform:translateY(340px);transition:transform .35s cubic-bezier(.3,1.4,.5,1);pointer-events:none}
+#chat.on{transform:none;pointer-events:auto}
+.chd{height:48px;background:#1a73e8;color:#fff;font-size:17px;display:flex;align-items:center;justify-content:space-between;padding-left:12px;white-space:nowrap}
+.chd span{flex:1;min-width:0;overflow:hidden}
+#chatX{position:relative;z-index:2;flex:none;width:52px;height:48px;background:#ff2b2b;color:#fff;border:0;border-left:4px solid #fff;font-size:32px;line-height:40px;transition:transform .16s cubic-bezier(.3,1.3,.5,1)}
+#chatBody,#chatSure{padding:12px;height:164px}
+.bub{display:table;background:#e6e6e6;border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:22px;line-height:1.15;margin-bottom:8px;animation:pop .25s}
+.bub.sm{font-size:15px;color:#666}
+.wave{display:inline-block;transform-origin:70% 90%;animation:wave .5s infinite alternate}
+@keyframes wave{from{transform:rotate(-12deg)}to{transform:rotate(18deg)}}
+#chatSure{text-align:center;font-size:20px}
+#chatStay{display:block;width:100%;height:74px;margin-top:8px;font-size:26px;background:#00e05a;border:5px solid #000;border-radius:12px}
+#chatLeave{margin-top:8px;font:700 13px Arial,Helvetica,sans-serif;background:none;border:0;color:#999;text-decoration:underline;padding:4px 10px}
+html.touch #chatLeave{font-size:20px;padding:8px 16px}
+.cin{position:absolute;left:10px;right:10px;bottom:8px;height:36px;border:3px solid #000;border-radius:18px;font:700 15px/30px Arial,Helvetica,sans-serif;color:#999;padding:0 12px;background:#fff}
+
+/* ---------- the cookie banner returns ---------- */
+#ck2{position:absolute;left:0;top:64px;width:1280px;height:622px;z-index:36;background:rgba(0,0,0,.62);display:none}
+#ck2.on{display:block}
+#ck2b{position:absolute;left:290px;top:230px;width:700px;height:150px;background:#111;color:#fff;border:6px solid #ffe600;border-radius:20px;display:flex;align-items:center;gap:16px;padding:0 20px;box-shadow:10px 10px 0 rgba(0,0,0,.6);transition:left .2s cubic-bezier(.3,1.3,.5,1),top .2s cubic-bezier(.3,1.3,.5,1),background .2s}
+#ck2.on #ck2b{animation:pop .3s cubic-bezier(.3,1.5,.5,1)}
+#ck2b svg{width:84px;height:84px;flex:none}
+#ck2b .ct{flex:1;font-size:23px;line-height:1.1}
+#ck2b .ct small{display:block;font-size:16px;color:#ffe600;margin-top:6px}
+#ck2Btn{flex:none;font-size:21px;line-height:1.05;padding:12px 12px;background:#00e05a;border:5px solid #fff;border-radius:14px}
+#ck2b.ok{background:#00e05a;color:#000;border-color:#000}
+#ck2b.ok #ck2Btn{display:none}
+#ck2b.ok .ct{font-size:30px}
+#ck2b.ok .ct small{color:#000;font-size:20px}
+
+/* ---------- toast ---------- */
+#toast{position:absolute;left:50%;top:74px;transform:translate(-50%,-30px);opacity:0;z-index:60;background:#000;color:#ffe600;border:4px solid #ffe600;border-radius:12px;font-size:24px;padding:8px 22px;white-space:nowrap;pointer-events:none;transition:transform .25s,opacity .25s}
+#toast.on{transform:translate(-50%,0);opacity:1}
+
+/* ---------- start + win ---------- */
+#start{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;color:#fff;font-size:28px}
+#start button{font-size:70px;padding:24px 60px;background:#ffe600;border:8px solid #fff;border-radius:24px;animation:pulse .7s infinite alternate}
+@keyframes pulse{to{transform:scale(1.06) rotate(-1.5deg)}}
+#win{position:absolute;inset:0;z-index:50;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff;overflow:hidden;text-align:center}
+#win.on{display:flex;animation:winbg .5s 3}
+@keyframes winbg{50%{background:#ff2bd1}}
+#win>*{position:relative;z-index:2}
+#win .go{font-size:34px;letter-spacing:12px}
+#win h1{font-size:128px;line-height:1;color:#ffe600;white-space:nowrap;animation:winp .45s infinite alternate;text-shadow:7px 7px 0 #ff2bd1}
+@keyframes winp{to{transform:scale(1.05) rotate(-2deg)}}
+#win .fs{font-size:60px;background:#fff;color:#000;padding:4px 34px;border-radius:14px}
+#win .fs b{color:#e00000}
+#chips{display:flex;gap:12px;margin-top:6px}
+#chips div{width:196px;background:#222;border:4px solid #ffe600;border-radius:12px;padding:8px 4px;font-size:17px;color:#bbb;opacity:0;animation:chip .3s forwards}
+#chips div b{display:block;font-size:21px;color:#fff}
+@keyframes chip{from{opacity:0;transform:translateY(30px)}to{opacity:1}}
+#win p{font-size:26px;color:#ff8bdc;position:relative;z-index:2}
+#again{font-size:22px;padding:8px 20px;background:#fff;border:0;border-radius:8px;position:relative;z-index:2}
+.cf{position:absolute!important;z-index:1!important;top:-40px;width:18px;height:28px;animation:fall linear infinite;z-index:1}
+@keyframes fall{to{transform:translateY(800px) rotate(720deg)}}
+
+/* ---------- fake cursor ---------- */
+#fc{position:absolute;left:0;top:0;width:0;height:0;z-index:100;pointer-events:none;display:none}
+#fc svg{position:absolute;left:-6px;top:-4px;width:72px;height:72px;filter:drop-shadow(5px 6px 0 rgba(0,0,0,.55));transform-origin:6px 4px;transition:transform .12s}
+#fc.down svg{transform:scale(.8)}
+#fc.dead svg{transform:rotate(115deg);transition:transform .7s}
+#rip{position:absolute;left:-45px;top:-45px;width:90px;height:90px;border:8px solid #ffe600;border-radius:50%;opacity:0;box-shadow:0 0 0 4px #000}
+#rip.go{animation:rip .4s ease-out}
+@keyframes rip{from{opacity:1;transform:scale(.15)}to{opacity:0;transform:scale(1)}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="hdr">
+    <div id="logo">TOTALLY NORMAL WEBSITE<span>(trust us)</span></div>
+    <div id="score">SITE <b id="sc">0</b> : <b class="you">0</b> YOU</div>
+  </div>
+
+  <!-- 1: cookie banner that runs away -->
+  <section class="scene" id="s1">
+    <div class="card article">
+      <div class="kick">TODAY'S TOP STORY</div>
+      <h1>10 REASONS TO ACCEPT COOKIES</h1>
+      <i></i><i style="width:92%"></i><i style="width:97%"></i><i style="width:60%"></i><i></i><i style="width:88%"></i><i style="width:95%"></i><i style="width:40%"></i>
+      <div class="locked">CONTENT LOCKED<small>accept cookies to continue</small></div>
+    </div>
+    <div id="cookie">
+      <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#d9a05b" stroke="#7a4a12" stroke-width="6"/><circle cx="34" cy="36" r="8" fill="#4a2a0a"/><circle cx="64" cy="30" r="6" fill="#4a2a0a"/><circle cx="68" cy="58" r="9" fill="#4a2a0a"/><circle cx="40" cy="66" r="7" fill="#4a2a0a"/><circle cx="52" cy="48" r="5" fill="#4a2a0a"/></svg>
+      <div class="ct"><span id="cookieMsg">WE VALUE YOUR PRIVACY*</span><small id="cookieSub">*at $0.03 per click</small></div>
+      <button id="cookieBtn">ACCEPT ALL</button>
+    </div>
+  </section>
+
+  <!-- 2: hope captcha -->
+  <section class="scene" id="s2">
+    <div class="card" id="capCard" style="left:120px;top:20px;width:1040px;height:580px">
+      <div id="grid"></div>
+      <div class="capside">
+        <div class="capq">Select all squares containing<b>HOPE</b></div>
+        <button id="verify">VERIFY</button>
+        <div id="capres"></div>
+      </div>
+      <div class="stamp" id="capStamp">WRONG!</div>
+    </div>
+  </section>
+
+  <!-- 3: newsletter popup inside a popup -->
+  <section class="scene" id="s3">
+    <div class="pop" id="p1">
+      <div class="bar">NEWSLETTER<button class="x" data-n="1">&times;</button></div>
+      <div class="pb big">
+        <h2>SUBSCRIBE TO OUR NEWSLETTER!</h2>
+        <div class="frm"><div>your@email (we already have it)</div><button class="sub">SUBSCRIBE</button></div>
+        <div class="pop hid" id="p2">
+          <div class="bar">NEWSLETTER ABOUT THE NEWSLETTER<button class="x" data-n="2">&times;</button></div>
+          <div class="pb big">
+            <h2>WAIT! GET OUR NEWSLETTER ABOUT CLOSING THAT POPUP</h2>
+            <div class="frm"><div>your@email (still have it)</div><button class="sub">SUBSCRIBE</button></div>
+            <div class="pop hid" id="p3">
+              <div class="bar">POPUP INSIDE A POPUP INSIDE A POPUP<button class="x" data-n="3">&times;</button></div>
+              <div class="pb">
+                <h2>CLOSING POPUPS? THERE'S A NEWSLETTER FOR THAT</h2>
+                <div class="frm"><div>your@email</div><button class="sub">YES</button><button class="sub">ALSO YES</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stamp" id="newsStamp">SUBSCRIBED &times;3<small>closing counts as consent</small></div>
+  </section>
+
+  <!-- 4: shrinking unsubscribe -->
+  <section class="scene" id="s4">
+    <div class="card uhead">YOU ARE SUBSCRIBED TO <span>3</span> NEWSLETTERS<small id="usmall">We would hate to see you try to leave.</small></div>
+    <button id="stay">STAY SUBSCRIBED</button>
+    <button id="unsub">UNSUBSCRIBE</button>
+    <div class="stamp" id="unsubStamp">THANKS FOR STAYING!<small>upgraded to PREMIUM ($49.99 / hour)</small></div>
+  </section>
+
+  <!-- 5: password with changing rules -->
+  <section class="scene" id="s5">
+    <div class="card pwc" id="pwCard">
+      <h2>CREATE A PASSWORD TO LEAVE</h2>
+      <div class="pwrow"><input id="pw" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="password"><button id="pwgo">SUBMIT</button></div>
+      <ul id="rules"></ul>
+      <div id="pwmsg">Rules may change without notice. They will.</div>
+      <div class="stamp" id="pwStamp">PASSWORD EXPIRED<small>it has been 4 seconds</small></div>
+    </div>
+  </section>
+
+  <!-- 6: terms pane with bad scrolling, continue / delete swap -->
+  <section class="scene" id="s6">
+    <div class="card tc lock" id="termCard">
+      <h2>TERMS &amp; CONDITIONS <span>(abridged: 4,000 pages)</span></h2>
+      <div id="terms" tabindex="0">
+        <p><b>1.</b> By scrolling, you agree. By not scrolling, you also agree.</p>
+        <p><b>2.</b> We may change these terms at any time, including right now, while you are reading them.</p>
+        <p><b>3.</b> "Continue" and "Delete account" are legally the same button.</p>
+        <p><b>4.</b> You grant us a perpetual license to your cursor, including where it has been.</p>
+        <p><b>5.</b> Scrolling speed is monitored for quality purposes. Yours is suspicious.</p>
+        <p><b>6.</b> Cookies are non-refundable and may reappear without warning.</p>
+        <p><b>7.</b> The close button is decorative. Do not approach the close button.</p>
+        <p><b>8.</b> Kevin from Live Chat is a valued team member and must be greeted.</p>
+        <p><b>9.</b> Loading bars are an estimate. 99% is a feeling, not a number.</p>
+        <p><b>10.</b> Any disputes will be settled by a captcha.</p>
+        <p><b>11.</b> You may unsubscribe at any time by mailing us a fax.</p>
+        <p><b>12.</b> Nobody has ever read this far. This clause is lonely.</p>
+        <p><b>13.</b> You agree that you scrolled here on purpose and that it was a mistake.</p>
+        <p><b>14.</b> THE END. (See pages 2 to 4,000 for the fine print.)</p>
+      </div>
+      <div id="tmsg">Scroll to the bottom to unlock the buttons.</div>
+      <button id="cont">CONTINUE</button>
+      <button id="del">DELETE ACCOUNT</button>
+      <div class="stamp" id="termStamp"></div>
+    </div>
+  </section>
+
+  <div id="tick"><div>CONGRATULATIONS! YOU ARE VISITOR #1,000,000 &nbsp;***&nbsp; YOUR CALL IS IMPORTANT TO US &nbsp;***&nbsp; THIS SITE WORKS BEST IN A BROWSER YOU DO NOT HAVE &nbsp;***&nbsp; PLEASE ROTATE YOUR DESKTOP &nbsp;***&nbsp; BY READING THIS YOU AGREE &nbsp;***&nbsp; HOT SINGLE POPUPS IN YOUR AREA &nbsp;***&nbsp;</div></div>
+
+  <div id="load">
+    <div id="loadT">LOADING</div>
+    <div id="loadBar"><div id="loadFill"></div></div>
+    <div id="loadP">0%</div>
+    <div id="loadS"></div>
+  </div>
+
+  <div id="chat">
+    <div class="chd"><span>LIVE CHAT &middot; KEVIN</span><button id="chatX" aria-label="close chat">&times;</button></div>
+    <div id="chatBody"></div>
+    <div id="chatSure" class="hid">LEAVING KEVIN SO SOON?
+      <button id="chatStay">KEEP CHATTING!</button>
+      <button id="chatLeave">leave (kevin will cry)</button>
+    </div>
+    <div class="cin">type a message... (disabled)</div>
+  </div>
+
+  <div id="ck2">
+    <div id="ck2b">
+      <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#d9a05b" stroke="#7a4a12" stroke-width="6"/><circle cx="34" cy="36" r="8" fill="#4a2a0a"/><circle cx="64" cy="30" r="6" fill="#4a2a0a"/><circle cx="68" cy="58" r="9" fill="#4a2a0a"/><circle cx="40" cy="66" r="7" fill="#4a2a0a"/><circle cx="52" cy="48" r="5" fill="#4a2a0a"/></svg>
+      <div class="ct"><span id="ck2Msg"></span><small id="ck2Sub"></small></div>
+      <button id="ck2Btn">ACCEPT ALL<br>(AGAIN)</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="start">
+    <button id="startBtn">ENTER WEBSITE</button>
+    <div>you can leave any time* &nbsp; <span style="color:#ffe600">*no</span></div>
+  </div>
+
+  <div id="win">
+    <div class="go">GAME OVER</div>
+    <h1>THE SITE WINS</h1>
+    <div class="fs">SITE <b id="finalSc">5</b> : 0 YOU</div>
+    <div id="chips">
+      <div style="animation-delay:.3s">COOKIES<b>ALL 1,847</b></div>
+      <div style="animation-delay:.45s">HOPE<b>NOT FOUND</b></div>
+      <div style="animation-delay:.6s">NEWSLETTERS<b>3 (PREMIUM)</b></div>
+      <div style="animation-delay:.68s">TERMS<b>ALL 4,000 PP.</b></div>
+      <div style="animation-delay:.75s">UNSUBSCRIBED<b>LOL NO</b></div>
+      <div style="animation-delay:.9s">PASSWORD<b>EXPIRED</b></div>
+    </div>
+    <p>Your patience has been sold to our partners.</p>
+    <button id="again">TRY AGAIN (it will not help)</button>
+  </div>
+
+  <div id="fc">
+    <div id="rip"></div>
+    <svg viewBox="0 0 72 72"><path d="M6 4 L6 56 L19 44 L29 66 L40 61 L30 40 L48 40 Z" fill="#fff" stroke="#000" stroke-width="5" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var DEMO=/[?&]demo=1(&|$)/.test(location.search);
+var $=function(id){return document.getElementById(id)};
+var stage=$('stage'),fc=$('fc'),scale=1,scene=0,siteScore=0,won=false;
+var HOLD=DEMO?700:1700;
+var ptype='mouse',sawMouse=false,rx=640,ry=360,dodgeAt=0,eatTap=0;
+if(DEMO)document.documentElement.classList.add('demo');
+
+function fit(){
+  var de=document.documentElement,W=de.clientWidth||innerWidth,H=de.clientHeight||innerHeight;
+  scale=Math.min(W/1280,H/720);
+  stage.style.transform='scale('+scale+')';
+  stage.style.left=(W-1280*scale)/2+'px';
+  stage.style.top=(H-720*scale)/2+'px';
+}
+fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,200)});
+
+function rectOf(el){
+  var r=el.getBoundingClientRect(),s=stage.getBoundingClientRect();
+  var x=(r.left-s.left)/scale,y=(r.top-s.top)/scale,w=r.width/scale,h=r.height/scale;
+  return {x:x,y:y,w:w,h:h,cx:x+w/2,cy:y+h/2};
+}
+function near(r,x,y,m){return x>r.x-m&&x<r.x+r.w+m&&y>r.y-m&&y<r.y+r.h+m}
+function show(n){
+  scene=n;
+  document.querySelectorAll('.scene').forEach(function(s){s.classList.toggle('on',s.id==='s'+n)});
+  if(n===5&&!DEMO)setTimeout(function(){if(!ck2On)$('pw').focus()},50);
+  if(!DEMO)onShow(n);
+}
+function point(){
+  siteScore++;var b=$('sc');b.textContent=siteScore;
+  b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');
+}
+function later(n){
+  setTimeout(function(){
+    var go=function(){n>6?win():show(n)};
+    if(n===2)loading('LOADING NEXT INCONVENIENCE',go);
+    else if(n>6&&!DEMO)loading('LOADING THE EXIT',go,'EXIT NOT FOUND. LOADING SOMETHING ELSE.');
+    else go();
+  },HOLD);
+}
+function toast(t,ms){
+  var el=$('toast');el.textContent=t;el.classList.add('on');
+  clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.remove('on')},ms);
+}
+function synthClick(x,y){
+  var s=stage.getBoundingClientRect(),el=document.elementFromPoint(s.left+x*scale,s.top+y*scale);
+  if(!el)return;
+  el=el.closest('button,input')||el;
+  el.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true}));el.click();
+  if(!DEMO&&el.tagName==='INPUT')el.focus();
+}
+
+/* ============ fake loading bar: 99%, then no ============ */
+function loading(title,done,endMsg){
+  var L=$('load'),bar=$('loadBar'),fill=$('loadFill'),P=$('loadP'),S=$('loadS');
+  var resets=DEMO||endMsg?1:2,sp=DEMO?.3:1;
+  var oops=['CONNECTION LOST. STARTING OVER.','WE FORGOT WHAT WE WERE LOADING.'];
+  $('loadT').textContent=title;L.classList.add('on');
+  function set(p){fill.style.width=p+'%';P.textContent=Math.floor(p)+'%'}
+  function run(i){
+    var dur=(i?1300:1900)*sp,t0=performance.now();
+    S.textContent=i?'this time for sure':'please wait. your time is worthless to us';
+    (function f(){
+      var k=Math.min(1,(performance.now()-t0)/dur);set(99*(1-Math.pow(1-k,3)));
+      if(k<1){requestAnimationFrame(f);return}
+      S.textContent='99%... almost there!';
+      setTimeout(function(){
+        if(i<resets){
+          set(0);S.textContent=oops[i%2];shake(bar);
+          setTimeout(function(){run(i+1)},750*sp);
+        }else{
+          if(endMsg){S.textContent=endMsg;shake(bar)}else{set(100);S.textContent='100%. sorry about that.'}
+          setTimeout(function(){L.classList.remove('on');done()},endMsg?1100:500*sp);
+        }
+      },900*sp);
+    })();
+  }
+  run(0);
+}
+function shake(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}
+
+/* ============ 1: cookie banner ============ */
+var cookie=$('cookie'),spots=[[30,24],[640,250],[24,440],[636,30],[330,440]],spotI=4;
+var fleeN=0,fleeT=0,cookieDone=false,FLEE_MAX=DEMO?3:6;
+var taunts=['NOPE!','TOO SLOW!','CAN\'T CATCH ME!','CONSENT IS A JOURNEY','MISSED AGAIN!','LEGALLY UNCATCHABLE'];
+function cookiePointer(x,y){
+  if(cookieDone||fleeN>=FLEE_MAX)return;
+  var now=performance.now();if(now-fleeT<300)return;
+  if(!near(rectOf(cookie),x,y,70))return;
+  for(var k=1;k<=spots.length;k++){
+    var i=(spotI+k)%spots.length,s=spots[i];
+    if(!near({x:s[0],y:s[1]+64,w:620,h:150},x,y,120)){spotI=i;break}
+  }
+  cookie.style.left=spots[spotI][0]+'px';cookie.style.top=spots[spotI][1]+'px';
+  $('cookieMsg').textContent=taunts[fleeN%taunts.length];
+  $('cookieSub').textContent='the banner has moved for your convenience';
+  cookie.classList.remove('flee');void cookie.offsetWidth;cookie.classList.add('flee');
+  fleeN++;fleeT=dodgeAt=now;
+  if(fleeN>=FLEE_MAX)setTimeout(cookieConcede,380);
+}
+function cookieConcede(){
+  if(cookieDone)return;cookieDone=true;
+  cookie.style.left='';cookie.style.top='';cookie.classList.add('done');
+  $('cookieMsg').textContent='TOO SLOW! WE ACCEPTED FOR YOU';
+  $('cookieSub').textContent='1,847 cookies installed. Enjoy!';
+  point();later(2);
+}
+$('cookieBtn').addEventListener('click',cookieConcede);
+
+/* ============ 2: hope captcha ============ */
+var T='<rect width="100" height="100" fill="';
+var tiles=[
+ T+'#e9f0ff"/><rect x="15" y="26" width="62" height="34" rx="5" fill="#fff" stroke="#000" stroke-width="5"/><rect x="79" y="36" width="7" height="14" fill="#000"/><rect x="20" y="31" width="7" height="24" fill="#e00000"/><text x="50" y="86" font-size="20">1%</text>',
+ T+'#fff3c4"/><rect x="22" y="10" width="56" height="58" rx="5" fill="#fff" stroke="#000" stroke-width="5"/><rect x="22" y="10" width="56" height="18" fill="#e00000" stroke="#000" stroke-width="5"/><text x="50" y="56" font-size="20">MON</text><text x="50" y="90">MONDAY 9AM</text>',
+ T+'#e4ffe9"/><text x="50" y="26">LOADING...</text><rect x="9" y="36" width="82" height="22" rx="4" fill="#fff" stroke="#000" stroke-width="5"/><rect x="12" y="39" width="72" height="16" fill="#1a73e8"/><text x="50" y="82" font-size="18">99%</text>',
+ T+'#7d8590"/><path d="M16 78V46a34 34 0 0 1 68 0V78Z" fill="#000"/><circle cx="50" cy="48" r="14" fill="#ffe600"/><circle cx="50" cy="48" r="20" fill="none" stroke="#ffe600" stroke-width="2" opacity=".6"/><text x="50" y="94" fill="#fff">IT\'S A TRAIN</text>',
+ T+'#ffe1f4"/><rect x="10" y="20" width="80" height="46" rx="5" fill="#ffe600" stroke="#000" stroke-width="5" stroke-dasharray="7 3"/><text x="50" y="40" font-size="15">LOTTO</text><text x="50" y="58" font-size="15" fill="#e00000">NO WIN</text><text x="50" y="88">TRY AGAIN</text>',
+ T+'#f1ead8"/><path d="M34 58h32l-5 24H39z" fill="#c8642f" stroke="#000" stroke-width="4"/><path d="M50 58C50 30 66 26 76 40" fill="none" stroke="#7a6a2a" stroke-width="5" stroke-linecap="round"/><ellipse cx="78" cy="48" rx="5" ry="10" fill="#a8842a" stroke="#000" stroke-width="2"/><ellipse cx="26" cy="80" rx="8" ry="3" fill="#a8842a"/><text x="50" y="18">R.I.P. FERN</text>',
+ T+'#dff6ff"/><path d="M32 10h36l-6 62H38z" fill="#fff" stroke="#000" stroke-width="5"/><path d="M35.7 44h28.6l-2.6 25.5H38.3z" fill="#39f"/><text x="50" y="92">HALF EMPTY</text>',
+ T+'#cfd6de"/><circle cx="36" cy="34" r="15" fill="#5c6670"/><circle cx="58" cy="28" r="20" fill="#5c6670"/><rect x="20" y="34" width="62" height="20" rx="10" fill="#5c6670"/><path d="M32 60l-5 14M48 60l-5 14M64 60l-5 14" stroke="#1a73e8" stroke-width="5" stroke-linecap="round"/><text x="50" y="92">WEEKEND</text>',
+ T+'#ece4ff"/><rect x="14" y="26" width="64" height="42" fill="#fff" stroke="#000" stroke-width="5"/><path d="M14 26l32 24 32-24" fill="none" stroke="#000" stroke-width="5"/><circle cx="78" cy="24" r="16" fill="#e00000"/><text x="78" y="29" fill="#fff" font-size="12">9,999</text><text x="46" y="90">UNREAD</text>'
+];
+var grid=$('grid'),capDone=false;
+tiles.forEach(function(inner){
+  var b=document.createElement('button');b.className='tile';
+  b.innerHTML='<svg viewBox="0 0 100 100">'+inner+'</svg><i class="ck"></i>';
+  b.addEventListener('click',function(){if(!capDone)b.classList.toggle('sel')});
+  grid.appendChild(b);
+});
+$('verify').addEventListener('click',function(){
+  if(capDone)return;capDone=true;
+  var any=grid.querySelector('.sel');
+  [].forEach.call(grid.children,function(t,i){setTimeout(function(){t.classList.add('nope')},i*45)});
+  setTimeout(function(){$('capStamp').classList.add('on')},420);
+  $('capres').innerHTML=any?'NO HOPE DETECTED<small>Correct answer: none. There never was any.</small>'
+                           :'YOU GAVE UP TOO EASILY<small>Also correct. Still wrong.</small>';
+  shake($('capCard'));point();later(3);
+});
+
+/* ============ 3: nested newsletter ============ */
+var newsDone=false,newsOpen=1;
+function subscribeAll(){
+  if(newsDone)return;newsDone=true;
+  shake($('p1'));$('newsStamp').classList.add('on');point();later(6);
+}
+var xN=[0,0,0,0],xT=0,X_MAX=DEMO?[0,1,0,0]:[0,3,2,2];
+function newsPointer(x,y,tap){
+  if(newsDone)return;
+  var n=newsOpen,b=document.querySelector('#p'+n+'>.bar>.x'),now=performance.now();
+  if(xN[n]>=X_MAX[n]||now-xT<300||!near(rectOf(b),x,y,tap?10:50))return;
+  xN[n]++;xT=dodgeAt=now;
+  var w=b.parentNode.clientWidth-64;
+  b.style.transform='translateX('+[0,-w,-w*.42][xN[n]%3]+'px)';
+}
+document.querySelectorAll('#s3 .x').forEach(function(x){
+  x.addEventListener('click',function(){
+    var n=+x.dataset.n;
+    if(newsDone)return;
+    if(n<newsOpen){shake($('p'+newsOpen));return}
+    x.style.transform='';
+    if(n===3){subscribeAll();return}
+    var pb=x.parentNode.nextElementSibling;
+    pb.classList.remove('big');
+    pb.querySelector('.frm').classList.add('hid');
+    $('p'+(n+1)).classList.remove('hid');newsOpen=n+1;
+  });
+});
+document.querySelectorAll('#s3 .sub').forEach(function(b){b.addEventListener('click',subscribeAll)});
+
+/* ============ 4: shrinking unsubscribe ============ */
+var unsub=$('unsub'),stay=$('stay'),uN=0,uT=0,unsubGone=false,unsubDone=false;
+var uSpots=[[1010,480],[240,500],[1150,210]],uScale=[1,.62,.38,.2,0],sScale=[1,1.5,2.1,2.7,3.2];
+var uLines=['Are you sure? Think of the newsletters.','The button is right there. Sort of.','Have you tried clicking smaller?','Unsubscribe button is unavailable in your region.'];
+function unsubHop(){
+  if(unsubGone)return;
+  uT=dodgeAt=performance.now();uN++;
+  var s=uSpots[uN-1];
+  if(s){unsub.style.left=(s[0]-210)+'px';unsub.style.top=(s[1]-55)+'px'}
+  unsub.style.transform='scale('+uScale[uN]+')';
+  stay.style.transform='scale('+sScale[uN]+')';
+  $('usmall').textContent=uLines[uN-1];
+  if(uN>=4){unsubGone=true;unsub.style.pointerEvents='none'}
+}
+function unsubPointer(x,y){
+  if(unsubGone||performance.now()-uT<330)return;
+  if(near(rectOf(unsub),x,y,45))unsubHop();
+}
+unsub.addEventListener('mousedown',function(e){e.preventDefault();if(performance.now()-uT>330)unsubHop()});
+unsub.addEventListener('click',function(e){e.preventDefault()});
+stay.addEventListener('click',function(){
+  if(unsubDone)return;unsubDone=true;
+  if(!unsubGone){uN=3;unsubHop()}
+  $('unsubStamp').classList.add('on');point();later(5);
+});
+
+/* ============ 5: password ============ */
+var RULES={
+  len8:{t:'At least 8 characters',f:function(p){return p.length>=8},next:'max7'},
+  max7:{t:'At most 7 characters',f:function(p){return p.length<=7},next:'exact'},
+  exact:{t:'Exactly 7.5 characters',f:function(){return false}},
+  feel:{t:'Must contain a feeling (e.g. SAD)',f:function(p){return /sad|joy|fear|rage|hope|love/i.test(p)},next:'nofeel'},
+  nofeel:{t:'No feelings. This is a password.',f:function(p){return !/sad|joy|fear|rage|hope|love/i.test(p)},next:'greg'},
+  greg:{t:'Must match Greg\'s password (ask Greg)',f:function(){return false}},
+  vowel:{t:'No vowels (vowels are Premium)',f:function(p){return !/[aeiou]/i.test(p)},next:'vowel5'},
+  vowel5:{t:'Must contain all 5 vowels, twice',f:function(p){return 'aeiou'.split('').every(function(v){return p.toLowerCase().split(v).length>2})},next:'orange'},
+  orange:{t:'Must rhyme with ORANGE',f:function(){return false}}
+};
+var slots=['len8','feel','vowel'],pending=[0,0,0],pw=$('pw'),rulesEl=$('rules'),attempts=0,pwDone=false;
+slots.forEach(function(k){
+  var li=document.createElement('li');
+  li.innerHTML='<span class="bd"></span><span class="rt"></span><em>RULE CHANGED!</em>';
+  li.querySelector('.rt').textContent=RULES[k].t;rulesEl.appendChild(li);
+});
+function evalRules(){
+  var p=pw.value;
+  slots.forEach(function(k,i){
+    var li=rulesEl.children[i],r=RULES[k],ok=p.length>0&&r.f(p);
+    li.classList.toggle('ok',ok);
+    if(ok&&r.next&&!pending[i]){
+      pending[i]=setTimeout(function(){
+        pending[i]=0;slots[i]=r.next;
+        li.querySelector('.rt').textContent=RULES[r.next].t;
+        li.classList.remove('upd');void li.offsetWidth;li.classList.add('upd');
+        evalRules();
+      },520);
+    }
+  });
+}
+pw.addEventListener('input',evalRules);
+function submitPw(){
+  if(pwDone)return;attempts++;
+  var msg=$('pwmsg');msg.classList.add('bad');
+  if(attempts>=(DEMO?1:2)){
+    pwDone=true;pw.value='';pw.blur();pw.disabled=true;
+    msg.textContent='Please create a new password to continue.';
+    $('pwStamp').classList.add('on');shake($('pwCard'));point();later(7);
+  }else{
+    msg.textContent='REJECTED: too weak. Also too strong.';shake($('pwCard'));
+  }
+}
+$('pwgo').addEventListener('click',submitPw);
+pw.addEventListener('keydown',function(e){if(e.key==='Enter')submitPw()});
+
+/* ============ 6: terms pane + continue / delete swap ============ */
+var tp=$('terms'),tmsg=$('tmsg'),termCard=$('termCard'),tStage=0,tUnlocked=false,tRev=0,tRevUsed=false,tSafety=0;
+var cont=$('cont'),del=$('del'),swapped=false,swapN=0,swapT=0,termsDone=false;
+function tSay(t,bad){tmsg.textContent=t;tmsg.classList.toggle('bad',!!bad)}
+function tSnap(t){
+  tp.style.overflowY='hidden';tp.scrollTop=0;
+  setTimeout(function(){tp.scrollTop=0;tp.style.overflowY=''},260);
+  shake(tp);tSay(t,true);
+}
+function tUnlock(t){
+  if(tUnlocked)return;tUnlocked=true;clearTimeout(tSafety);
+  termCard.classList.remove('lock');tSay(t,false);
+}
+tp.addEventListener('scroll',function(){
+  if(tUnlocked||termsDone)return;
+  var f=tp.scrollTop/(tp.scrollHeight-tp.clientHeight);
+  if(tStage===0&&f>.4){tStage=1;tSnap('YOU SCROLLED TOO FAST. STARTING OVER.')}
+  else if(tStage===1&&f>.55&&!tRevUsed&&!DEMO){tRevUsed=true;tRev=performance.now()+1800;tSay('SCROLL DIRECTION REVERSED FOR ACCESSIBILITY.',true)}
+  else if(tStage===1&&f>.93){
+    if(DEMO){tUnlock('FINE. BUTTONS UNLOCKED. CHOOSE WISELY.');return}
+    tStage=2;tSnap('TERMS UPDATED WHILE YOU WERE READING. PLEASE RE-READ.');
+  }
+  else if(tStage===2&&f>.97)tUnlock('FINE. BUTTONS UNLOCKED. CHOOSE WISELY.');
+});
+tp.addEventListener('wheel',function(e){
+  e.preventDefault();
+  var d=e.deltaY*(e.deltaMode===1?32:e.deltaMode===2?300:1);
+  tp.scrollTop+=performance.now()<tRev?-d:d;
+},{passive:false});
+function swapPointer(x,y,tap){
+  var now=performance.now();
+  if(!tUnlocked||termsDone||swapN>=(DEMO?2:tap?3:7)||now-swapT<420)return;
+  if(!near(rectOf(cont),x,y,tap?12:55))return;
+  swapped=!swapped;swapN++;swapT=dodgeAt=now;
+  cont.style.left=(swapped?550:110)+'px';del.style.left=(swapped?110:550)+'px';
+  tSay(['BUTTONS REARRANGED FOR YOUR CONVENIENCE.','OPTIMIZING LAYOUT...','A/B TESTING IN PROGRESS. YOU ARE GROUP B.'][swapN%3],true);
+}
+function termsEnd(a,b){
+  if(termsDone)return;
+  if(!tUnlocked){shake(termCard);tSay('READ IT FIRST. ALL OF IT. TO THE BOTTOM.',true);return}
+  if(performance.now()-swapT<220)return;
+  termsDone=true;
+  var st=$('termStamp');st.innerHTML=a+'<small>'+b+'</small>';st.classList.add('on');
+  shake(termCard);point();later(4);
+}
+cont.addEventListener('click',function(){termsEnd('YOU AGREED!','to all 4,000 pages. and the sequel.')});
+del.addEventListener('click',function(){termsEnd('ACCOUNT DELETED!','just kidding. we keep everything forever.')});
+
+/* ============ chat widget that keeps coming back ============ */
+var WAVE='<span class="wave">\uD83D\uDC4B</span>';
+var chat=$('chat'),chatX=$('chatX'),chatBody=$('chatBody'),chatSure=$('chatSure');
+var chatN=0,chatDodge=0,chatT=0,chatOn=false,chatTimer=0,CHAT_MAX=DEMO?1:5;
+var chatLines=['hi! '+WAVE+' still there?','hello?? '+WAVE+' still there?','it\'s kevin again '+WAVE+' still there?','you closed me. rude. '+WAVE+' still there?','last time, promise* '+WAVE+' still there?'];
+function chatSay(t){
+  chatSure.classList.add('hid');chatBody.classList.remove('hid');
+  chatBody.innerHTML='<div class="bub">'+t+'</div><div class="bub sm">kevin is typing...</div>';
+}
+function chatOpen(){
+  if(won||chatOn||chatN>=CHAT_MAX)return;
+  chatOn=true;chatDodge=0;chatX.style.transform='';
+  chatSay(chatLines[chatN%chatLines.length]);chatN++;
+  chat.classList.add('on');
+}
+function chatClose(){
+  chatOn=false;chat.classList.remove('on');clearTimeout(chatTimer);
+  if(!DEMO)chatTimer=setTimeout(chatOpen,9000+Math.random()*4000);
+}
+function chatPointer(x,y,tap){
+  var now=performance.now();
+  if(!chatOn||chatDodge>=(DEMO?1:2)||now-chatT<300||!near(rectOf(chatX),x,y,tap?10:45))return;
+  chatDodge++;chatT=dodgeAt=now;
+  chatX.style.transform=chatDodge%2?'translateX(-264px)':'';
+}
+chatX.addEventListener('click',function(){
+  if(!chatOn)return;
+  if(DEMO){chatClose();return}
+  chatBody.classList.add('hid');chatSure.classList.remove('hid');
+});
+$('chatStay').addEventListener('click',function(){chatDodge=0;chatX.style.transform='';chatSay('yay!! '+WAVE+' so... still there?')});
+$('chatLeave').addEventListener('click',chatClose);
+
+/* ============ the cookie banner comes back ============ */
+var ck2=$('ck2'),ck2b=$('ck2b'),ck2On=false,ck2Busy=false,ck2N=0,ck2Flee=0,ck2T=0,ck2I=0;
+var ck2Spots=[[30,30],[550,440],[30,430],[550,40]];
+var ck2Txt=[['YOUR COOKIES EXPIRED. ACCEPT AGAIN?','*they were fresh 40 seconds ago'],['WE BAKED NEW COOKIES. ACCEPT THOSE TOO.','*declining is a Premium feature']];
+function ck2Open(){
+  if(DEMO||won||ck2On||ck2N>=ck2Txt.length)return;
+  if($('load').classList.contains('on')){setTimeout(ck2Open,1500);return}
+  ck2On=true;ck2Busy=false;ck2Flee=0;
+  $('ck2Msg').textContent=ck2Txt[ck2N][0];$('ck2Sub').textContent=ck2Txt[ck2N][1];
+  ck2b.classList.remove('ok');ck2b.style.left='';ck2b.style.top='';
+  ck2.classList.add('on');pw.blur();
+}
+function ck2Pointer(x,y){
+  var now=performance.now();
+  if(ck2Busy||ck2Flee>=2||now-ck2T<300||!near(rectOf(ck2b),x,y,60))return;
+  for(var k=1;k<=ck2Spots.length;k++){
+    var i=(ck2I+k)%ck2Spots.length,s=ck2Spots[i];
+    if(!near({x:s[0],y:s[1]+64,w:700,h:150},x,y,90)){ck2I=i;break}
+  }
+  ck2b.style.left=ck2Spots[ck2I][0]+'px';ck2b.style.top=ck2Spots[ck2I][1]+'px';
+  $('ck2Sub').textContent=['*the banner has moved. again.','*consent is still a journey'][ck2Flee];
+  ck2Flee++;ck2T=dodgeAt=now;
+}
+$('ck2Btn').addEventListener('click',function(){
+  if(!ck2On||ck2Busy)return;ck2Busy=true;ck2N++;
+  ck2b.classList.add('ok');
+  $('ck2Msg').textContent='THANK YOU FOR YOUR CONTINUED CONSENT';
+  $('ck2Sub').textContent='1,847 more cookies installed.';
+  point();
+  setTimeout(function(){ck2On=false;ck2.classList.remove('on');if(scene===5&&!pwDone)pw.focus()},1100);
+});
+
+/* ============ laggy / inverted cursor (mouse only, brief) ============ */
+var fxMode=null,ex=0,ey=0;
+function startFx(mode,ms){
+  if(DEMO||fxMode||won||!sawMouse||ptype!=='mouse')return;
+  fxMode=mode;ex=rx;ey=ry;
+  stage.classList.add('nocur');fc.style.display='block';
+  toast(mode==='lag'?'MOUSE LAG ENABLED FOR YOUR SAFETY':'CURSOR INVERTED (FREE TRIAL OF PREMIUM)',ms);
+  (function f(){
+    if(!fxMode)return;
+    if(fxMode==='lag'){ex+=(rx-ex)*.045;ey+=(ry-ey)*.045}else{ex=1280-rx;ey=720-ry}
+    fc.style.transform='translate('+ex+'px,'+ey+'px)';
+    onPointer(ex,ey);requestAnimationFrame(f);
+  })();
+  setTimeout(endFx,ms);
+}
+function endFx(){
+  if(!fxMode)return;
+  fxMode=null;stage.classList.remove('nocur');fc.style.display='none';
+}
+
+/* ============ tab away: beg in the title, flicker the favicon ============ */
+var TITLE=document.title,favEl=$('fav'),begT=0,favT=0,begI=0,favI=0;
+var begs=['come back','we miss you','please come back','it\'s so quiet in here','we can change','come back... we have cookies','(1) new reason to return'];
+function favSvg(bg,fg,mouth){
+  return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="'+bg+'"/><circle cx="11" cy="12" r="3" fill="'+fg+'"/><circle cx="21" cy="12" r="3" fill="'+fg+'"/><path d="'+mouth+'" fill="none" stroke="'+fg+'" stroke-width="3" stroke-linecap="round"/></svg>');
+}
+var FAV=favSvg('#ffe600','#000','M9 19q7 7 14 0'),FAVS=[favSvg('#e00000','#fff','M9 24q7-7 14 0'),favSvg('#000','#ffe600','M9 24q7-7 14 0')];
+favEl.href=FAV;
+function away(){
+  if(begT)return;
+  begI=0;document.title=begs[0];favEl.href=FAVS[0];
+  begT=setInterval(function(){begI=(begI+1)%begs.length;document.title=begs[begI]},1200);
+  favT=setInterval(function(){favI^=1;favEl.href=FAVS[favI]},350);
+}
+function back(){
+  clearInterval(begT);clearInterval(favT);begT=favT=0;
+  document.title=TITLE;favEl.href=FAV;
+}
+document.addEventListener('visibilitychange',function(){document.hidden?away():back()});
+addEventListener('blur',away);
+addEventListener('focus',function(){if(!document.hidden)back()});
+
+/* ============ what each scene springs on a real visitor ============ */
+function onShow(n){
+  if(n===2){setTimeout(function(){startFx('lag',2200)},700);chatTimer=setTimeout(chatOpen,3500)}
+  if(n===3)setTimeout(ck2Open,1300);
+  if(n===6)tSafety=setTimeout(function(){tUnlock('FINE. WE WILL ASSUME YOU READ IT.')},30000);
+  if(n===4)setTimeout(function(){startFx('inv',2200)},600);
+  if(n===5)setTimeout(ck2Open,1800);
+}
+
+/* ============ win ============ */
+function win(){
+  if(won)return;won=true;scene=7;
+  endFx();chatOn=false;chat.classList.remove('on');clearTimeout(chatTimer);ck2On=false;ck2.classList.remove('on');
+  $('finalSc').textContent=siteScore;
+  var w=$('win'),cols=['#ffe600','#ff2bd1','#00e05a','#6ff','#fff','#ff2b2b'];
+  for(var i=0;i<34;i++){
+    var c=document.createElement('div');c.className='cf';
+    c.style.left=(i*38+((i*53)%29))+'px';c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(1.6+((i*7)%10)/8)+'s';c.style.animationDelay=(-((i*13)%20)/10)+'s';
+    w.appendChild(c);
+  }
+  if(DEMO)$('again').style.display='none';
+  w.classList.add('on');
+  var h=w.querySelector('h1'),fs=128;
+  while(h.scrollWidth>1160&&fs>60){fs-=4;h.style.fontSize=fs+'px'}
+}
+$('again').addEventListener('click',function(){location.reload()});
+
+/* ============ pointer plumbing ============ */
+function onPointer(x,y,tap){
+  if(ck2On){ck2Pointer(x,y);return}
+  chatPointer(x,y,tap);
+  if(scene===1)cookiePointer(x,y);
+  else if(scene===3)newsPointer(x,y,tap);
+  else if(scene===4)unsubPointer(x,y);
+  else if(scene===6)swapPointer(x,y,tap);
+}
+if(!DEMO){
+  /* real pointer: hover-approach for mice, tap-approach (near miss) for fingers */
+  var track=function(e,down){
+    var s=stage.getBoundingClientRect(),touch=e.pointerType==='touch';
+    ptype=e.pointerType||'mouse';if(ptype==='mouse')sawMouse=true;
+    document.documentElement.classList.toggle('touch',touch);
+    rx=(e.clientX-s.left)/scale;ry=(e.clientY-s.top)/scale;
+    if(touch)endFx();
+    var d0=dodgeAt;
+    if(!fxMode)onPointer(rx,ry,down&&touch);
+    if(down&&touch&&dodgeAt!==d0)eatTap=performance.now();
+  };
+  /* a tap that made something dodge is a near miss: its click does not count */
+  addEventListener('click',function(e){
+    if(e.isTrusted&&eatTap&&performance.now()-eatTap<700){eatTap=0;e.stopPropagation();e.preventDefault()}
+  },true);
+  addEventListener('pointermove',function(e){track(e,false)});
+  addEventListener('pointerdown',function(e){track(e,true)},true);
+  /* while the cursor is lagging / inverted, clicks land where the visible cursor is */
+  ['pointerdown','mousedown','mouseup','click'].forEach(function(t){
+    addEventListener(t,function(e){
+      if(!fxMode||!e.isTrusted)return;
+      e.stopPropagation();e.preventDefault();
+      if(t==='click')synthClick(ex,ey);
+    },true);
+  });
+  $('startBtn').addEventListener('click',function(){$('start').style.display='none';show(1)});
+  return;
+}
+
+/* ============ demo mode: fake cursor drives everything ============ */
+var rip=$('rip'),cx=1040,cy=250;
+function setC(x,y){cx=x;cy=y;fc.style.transform='translate('+x+'px,'+y+'px)';onPointer(x,y)}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function moveTo(x,y,d){
+  return new Promise(function(res){
+    var x0=cx,y0=cy,t0=performance.now();
+    (function f(){
+      var k=Math.min(1,(performance.now()-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      setC(x0+(x-x0)*e,y0+(y-y0)*e);
+      k<1?requestAnimationFrame(f):res();
+    })();
+  });
+}
+function moveToEl(el,d,fx,fy){var r=rectOf(el);return moveTo(r.x+r.w*(fx==null?.5:fx),r.y+r.h*(fy==null?.55:fy),d)}
+async function click(){
+  fc.classList.add('down');rip.classList.remove('go');void rip.offsetWidth;rip.classList.add('go');
+  synthClick(cx,cy);
+  await sleep(110);fc.classList.remove('down');
+}
+async function until(fn){while(!fn())await sleep(30)}
+async function type(str,ms){
+  for(var i=0;i<str.length;i++){pw.value+=str[i];pw.dispatchEvent(new Event('input',{bubbles:true}));await sleep(ms)}
+}
+function on(el){return near(rectOf(el),cx,cy,0)}
+function scrollTerms(f,d){
+  return new Promise(function(res){
+    var a=tp.scrollTop,b=f*(tp.scrollHeight-tp.clientHeight),t0=performance.now(),st=tStage;
+    (function g(){
+      var k=Math.min(1,(performance.now()-t0)/d);
+      if(tStage!==st||tUnlocked){res();return}
+      tp.scrollTop=a+(b-a)*k;
+      k<1?requestAnimationFrame(g):res();
+    })();
+  });
+}
+async function demo(){
+  $('start').style.display='none';fc.style.display='block';setC(cx,cy);show(1);
+  await sleep(550);
+  /* cookies: chase the banner */
+  while(!cookieDone){await moveToEl($('cookieBtn'),420);await sleep(120)}
+  /* loading bar: 99%, reset, wait some more */
+  await moveTo(640,560,500);
+  await until(function(){return scene===2});await sleep(200);
+  /* captcha: pick some hope, be wrong */
+  var picks=[2,6];
+  for(var i=0;i<picks.length;i++){await moveToEl(grid.children[picks[i]],310);await click();await sleep(60)}
+  /* chat pops up; its close button dodges once */
+  chatOpen();await sleep(520);
+  await moveToEl(chatX,380,.5,.5);await sleep(180);
+  if(!on(chatX)){await moveToEl(chatX,300,.5,.5);await sleep(80)}
+  await click();await sleep(150);
+  await moveToEl($('verify'),360);await click();
+  await until(function(){return scene===3});await sleep(300);
+  /* newsletter: every close opens another */
+  for(var n=1;n<=3;n++){
+    var xb=document.querySelector('#p'+n+'>.bar>.x');
+    await moveToEl(xb,400);
+    if(!on(xb)){await sleep(260);await moveToEl(xb,420)}
+    await click();await sleep(190);
+  }
+  await until(function(){return scene===6});await sleep(250);
+  /* terms: scroll snaps back, then continue / delete trade places */
+  await moveToEl(tp,300,.5,.5);
+  await scrollTerms(.5,420);await sleep(450);
+  await scrollTerms(1,400);await sleep(260);
+  await moveToEl(cont,340,.5,.5);await sleep(260);
+  await moveToEl(cont,320,.5,.5);await sleep(240);
+  await click();
+  await until(function(){return scene===4});await sleep(250);
+  /* unsubscribe: chase the shrinking button */
+  while(!unsubGone){await moveToEl(unsub,370,.5,.5);await sleep(110)}
+  await sleep(200);await moveTo(660,470,300);await sleep(150);await click();
+  await until(function(){return scene===5});await sleep(250);
+  /* password: rules keep changing */
+  await moveToEl(pw,380,.8,.7);await click();
+  await type('hunter2',60);await sleep(250);
+  await type('SAD',100);await sleep(550);
+  await moveToEl($('pwgo'),380);await click();
+  await until(function(){return won});
+  /* payoff: the cursor gives up */
+  await sleep(350);fc.classList.add('dead');
+  await moveTo(1130,655,750);
+}
+demo();
+})();
+</script>
+</body>
+</html>
